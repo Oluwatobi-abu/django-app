@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Task</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@500;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #111318; --surface: #1a1d24; --border: #2a2d36;
+      --text: #e8e6f0; --muted: #6b6a78; --accent: #7c6af7;
+    }
+    body { background: var(--bg); color: var(--text); font-family: 'Space Mono', monospace; min-height: 100vh; }
+    nav { display: flex; justify-content: space-between; align-items: center; padding: 1.2rem 2.5rem; border-bottom: 1px solid var(--border); }
+    nav a { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.9rem; color: var(--muted); text-decoration: none; padding: 0.35rem 0.9rem; border-radius: 4px; transition: color 0.2s, background 0.2s; }
+    nav a:hover { color: var(--text); background: var(--border); }
+    .page-wrap { max-width: 600px; margin: 3rem auto; padding: 0 1.5rem; }
+    h1 { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; margin-bottom: 2rem; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 2rem; }
+    label { display: block; font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem; margin-top: 1rem; }
+    label:first-child { margin-top: 0; }
+    input[type="text"], input[type="date"], textarea, select {
+      width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+      padding: 0.7rem 1rem; color: var(--text); font-family: 'Space Mono', monospace;
+      font-size: 0.85rem; outline: none; transition: border-color 0.2s;
+    }
+    input:focus, textarea:focus, select:focus { border-color: var(--accent); }
+    textarea { resize: vertical; min-height: 80px; }
+    select option { background: var(--bg); }
+    .actions { display: flex; gap: 0.75rem; margin-top: 1.5rem; }
+    .btn { padding: 0.7rem 1.3rem; border-radius: 6px; border: none; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.85rem; cursor: pointer; text-decoration: none; display: inline-block; }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-ghost { background: var(--border); color: var(--muted); }
+    .messages { margin-bottom: 1.5rem; }
+    .msg { padding: 0.75rem 1rem; border-radius: 6px; font-size: 0.8rem; margin-bottom: 0.5rem; }
+    .msg.error { background: rgba(248,113,113,0.1); color: #f87171; border-left: 3px solid #f87171; }
+  </style>
+</head>
+<body>
+  <nav>
+    <div>
+      <a href="{% url 'todo:list' %}">← Back to Tasks</a>
+    </div>
+  </nav>
+  <div class="page-wrap">
+    <h1>Edit Task</h1>
+    {% if messages %}
+    <div class="messages">
+      {% for message in messages %}<div class="msg {{ message.tags }}">{{ message }}</div>{% endfor %}
+    </div>
+    {% endif %}
+    <div class="card">
+      <form method="post">
+        {% csrf_token %}
+        <label for="title">Title</label>
+        <input type="text" id="title" name="title" value="{{ todo.title }}" required>
+        <label for="description">Description</label>
+        <textarea id="description" name="description">{{ todo.description }}</textarea>
+        <label for="priority">Priority</label>
+        <select id="priority" name="priority">
+          {% for val, label in priorities %}
+          <option value="{{ val }}" {% if todo.priority == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+        <label for="due_date">Due Date</label>
+        <input type="date" id="due_date" name="due_date" value="{{ todo.due_date|default:'' }}">
+        <div class="actions">
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+          <a href="{% url 'todo:list' %}" class="btn btn-ghost">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

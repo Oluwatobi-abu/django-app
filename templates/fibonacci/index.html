@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fibonacci Generator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink: #0d0d0d;
+      --cream: #f5f0e8;
+      --gold: #c9a84c;
+      --rust: #c0392b;
+      --muted: #7a7165;
+    }
+
+    body {
+      background: var(--cream);
+      color: var(--ink);
+      font-family: 'DM Mono', monospace;
+      min-height: 100vh;
+    }
+
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.2rem 2.5rem;
+      border-bottom: 2px solid var(--ink);
+      background: var(--cream);
+    }
+
+    nav a {
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--ink);
+      text-decoration: none;
+      padding: 0.4rem 1rem;
+      border: 2px solid transparent;
+      transition: border-color 0.2s;
+    }
+
+    nav a:hover, nav a.active {
+      border-color: var(--ink);
+    }
+
+    .hero {
+      padding: 4rem 2.5rem 2rem;
+      border-bottom: 1px solid #c5bfb5;
+    }
+
+    .label {
+      font-size: 0.7rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
+    }
+
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(3rem, 8vw, 6rem);
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -0.02em;
+    }
+
+    h1 span { color: var(--gold); }
+
+    .subtitle {
+      margin-top: 1rem;
+      color: var(--muted);
+      font-size: 0.85rem;
+      max-width: 480px;
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      min-height: calc(100vh - 220px);
+    }
+
+    .sidebar {
+      border-right: 2px solid var(--ink);
+      padding: 2.5rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      display: block;
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+      color: var(--muted);
+    }
+
+    input[type="number"] {
+      width: 100%;
+      padding: 0.9rem 1rem;
+      border: 2px solid var(--ink);
+      background: transparent;
+      font-family: 'DM Mono', monospace;
+      font-size: 1.5rem;
+      font-weight: 500;
+      color: var(--ink);
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    input[type="number"]:focus {
+      background: var(--ink);
+      color: var(--cream);
+    }
+
+    input[type="number"]::-webkit-inner-spin-button { opacity: 0; }
+
+    .generate-btn {
+      width: 100%;
+      padding: 1rem;
+      background: var(--ink);
+      color: var(--cream);
+      border: 2px solid var(--ink);
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.05em;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .generate-btn:hover {
+      background: var(--gold);
+      border-color: var(--gold);
+      color: var(--ink);
+    }
+
+    .error {
+      margin-top: 1rem;
+      padding: 0.75rem 1rem;
+      border-left: 4px solid var(--rust);
+      background: #fdf2f0;
+      font-size: 0.82rem;
+      color: var(--rust);
+    }
+
+    .stats-block {
+      margin-top: 2rem;
+      padding-top: 2rem;
+      border-top: 1px solid #c5bfb5;
+    }
+
+    .stat {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 0.5rem 0;
+      border-bottom: 1px dashed #c5bfb5;
+      font-size: 0.82rem;
+    }
+
+    .stat-value {
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: var(--gold);
+    }
+
+    .content-panel {
+      padding: 2.5rem;
+      overflow: auto;
+    }
+
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: var(--muted);
+      text-align: center;
+      gap: 1rem;
+    }
+
+    .empty-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 8rem;
+      font-weight: 900;
+      opacity: 0.07;
+      line-height: 1;
+    }
+
+    .series-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .fib-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border: 1.5px solid var(--ink);
+      padding: 0.6rem 0.8rem;
+      min-width: 3.5rem;
+      animation: pop 0.15s ease both;
+    }
+
+    @keyframes pop {
+      from { transform: scale(0.85); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .fib-index {
+      font-size: 0.55rem;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .fib-value {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--ink);
+      word-break: break-all;
+      text-align: center;
+    }
+
+    .fib-item:nth-child(5n+1) { border-color: var(--gold); }
+    .fib-item:nth-child(5n+2) { border-color: var(--rust); }
+
+    .api-hint {
+      margin-top: 2.5rem;
+      padding: 1rem;
+      background: rgba(0,0,0,0.04);
+      border-left: 3px solid var(--gold);
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .api-hint code {
+      color: var(--ink);
+      font-weight: 500;
+    }
+
+    @media (max-width: 720px) {
+      .main-grid { grid-template-columns: 1fr; }
+      .sidebar { border-right: none; border-bottom: 2px solid var(--ink); }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div>
+      <a href="{% url 'todo:list' %}">Todo List</a>
+      <a href="{% url 'fibonacci:index' %}" class="active">Fibonacci</a>
+    </div>
+    <span style="font-size:0.7rem;letter-spacing:0.1em;color:var(--muted)">DJANGO APP</span>
+  </nav>
+
+  <div class="hero">
+    <p class="label">Mathematical Series Generator</p>
+    <h1>Fibo<span>nacci</span></h1>
+    <p class="subtitle">Generate the Fibonacci sequence using Python's generator pattern — lazy evaluation, infinite potential.</p>
+  </div>
+
+  <div class="main-grid">
+    <div class="sidebar">
+      <form method="post" action="{% url 'fibonacci:index' %}">
+        {% csrf_token %}
+        <div class="form-group">
+          <label for="terms">Number of Terms</label>
+          <input type="number" id="terms" name="terms" min="1" max="1000"
+                 value="{{ n|default:'' }}" placeholder="10" autofocus>
+        </div>
+        <button type="submit" class="generate-btn">Generate Series →</button>
+      </form>
+
+      {% if error %}
+      <div class="error">{{ error }}</div>
+      {% endif %}
+
+      {% if series %}
+      <div class="stats-block">
+        <div class="stat">
+          <span>Terms</span>
+          <span class="stat-value">{{ series|length }}</span>
+        </div>
+        <div class="stat">
+          <span>Sum</span>
+          <span class="stat-value">{{ series|last }}</span>
+        </div>
+        <div class="stat">
+          <span>Largest</span>
+          <span class="stat-value">{{ series|last }}</span>
+        </div>
+        <div class="stat">
+          <span>First</span>
+          <span class="stat-value">{{ series.0 }}</span>
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="api-hint">
+        <strong>API endpoint:</strong><br>
+        <code>GET /fibonacci/api/?terms=20</code><br>
+        Returns JSON with series, sum &amp; count.
+      </div>
+    </div>
+
+    <div class="content-panel">
+      {% if series %}
+      <p class="label" style="margin-bottom:1.5rem">Sequence — {{ series|length }} terms</p>
+      <div class="series-grid">
+        {% for num in series %}
+        <div class="fib-item" style="animation-delay: {{ forloop.counter0 }}ms">
+          <span class="fib-index">F{{ forloop.counter0 }}</span>
+          <span class="fib-value">{{ num }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <div class="empty-num">0, 1, 1, 2…</div>
+        <p class="label">Enter a number and click Generate</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</body>
+</html>
