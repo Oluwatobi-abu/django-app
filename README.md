@@ -2,11 +2,11 @@
 
 [![Python](https://img.shields.io/badge/Python-3.11-blue?logo=python)](https://python.org)
 [![Django](https://img.shields.io/badge/Django-4.2-green?logo=django)](https://djangoproject.com)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-blue?logo=postgresql)](https://postgresql.org)
+[![SQLite](https://img.shields.io/badge/SQLite-3-blue?logo=sqlite)](https://sqlite.org)
 [![Deployed on Render](https://img.shields.io/badge/Deployed-Render-46E3B7?logo=render)](https://django-app-1aqk.onrender.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-> A production-deployed Django web application featuring a mathematically elegant Fibonacci series generator and a fully functional PostgreSQL-backed Todo list — built, tested, and shipped to the cloud.
+> A production-deployed Django web application featuring a mathematically elegant Fibonacci series generator and a fully functional SQLite-backed Todo list — built, tested, and shipped to the cloud.
 
 **🌐 Live Demo:** [https://django-app-1aqk.onrender.com](https://django-app-1aqk.onrender.com)
 
@@ -18,13 +18,13 @@
 |---|---|
 | 🔢 **Fibonacci Generator** | Generates series up to 1,000 terms using Python's `yield` generator pattern (lazy evaluation) |
 | 🔌 **REST-style JSON API** | `/fibonacci/api/?terms=N` returns series, sum, and count as JSON |
-| ✅ **Todo CRUD** | Full Create, Read, Update, Delete with PostgreSQL persistence |
+| ✅ **Todo CRUD** | Full Create, Read, Update, Delete with SQLite persistence |
 | 🎯 **Priority Levels** | Tasks tagged Low / Medium / High with colour-coded indicators |
 | 📅 **Due Dates** | Optional due date field per task |
 | 🔍 **Filters** | Filter todos by completion status and priority level |
 | 🧹 **Bulk Clear** | One-click clear of all completed tasks |
 | ⚙️ **Django Admin** | Full admin panel for database management |
-| 🚀 **Production Ready** | Deployed with Gunicorn + WhiteNoise + Render + PostgreSQL |
+| 🚀 **Production Ready** | Deployed with Gunicorn + WhiteNoise + Render + SQLite |
 
 ---
 
@@ -33,11 +33,11 @@
 | Layer | Technology |
 |---|---|
 | **Backend** | Python 3.11, Django 4.2 |
-| **Database** | PostgreSQL 17 (via psycopg2) |
+| **Database** | SQLite 3 (Django built-in, zero configuration) |
 | **Web Server** | Gunicorn (production), Django dev server (local) |
 | **Static Files** | WhiteNoise (no nginx required) |
 | **Deployment** | Render (PaaS) |
-| **DB Config** | `dj-database-url` for environment-based DB switching |
+| **DB Config** | Django's built-in SQLite backend — no extra drivers needed |
 
 ---
 
@@ -80,18 +80,18 @@ GET /fibonacci/api/?terms=10
 }
 ```
 
-### PostgreSQL Schema
+### SQLite Schema
 
 ```sql
 CREATE TABLE todos (
-    id          BIGSERIAL PRIMARY KEY,
+    id          INTEGER      PRIMARY KEY AUTOINCREMENT,
     title       VARCHAR(255) NOT NULL,
     description TEXT         DEFAULT '',
     completed   BOOLEAN      DEFAULT FALSE,
     priority    VARCHAR(10)  DEFAULT 'medium',  -- low | medium | high
     due_date    DATE,
-    created_at  TIMESTAMPTZ  NOT NULL,
-    updated_at  TIMESTAMPTZ  NOT NULL
+    created_at  DATETIME     NOT NULL,
+    updated_at  DATETIME     NOT NULL
 );
 ```
 
@@ -116,7 +116,7 @@ django-app/
 │   └── apps.py
 │
 ├── todo/                        # Todo app
-│   ├── models.py                # Todo model (PostgreSQL)
+│   ├── models.py                # Todo model (SQLite)
 │   ├── views.py                 # CRUD views
 │   ├── admin.py                 # Django admin registration
 │   ├── urls.py                  # /todo/ routes
@@ -137,8 +137,8 @@ django-app/
 
 ### Prerequisites
 - Python 3.11+
-- PostgreSQL 14+
 - pip
+- SQLite (built into Python — no installation needed)
 
 ### 1. Clone the repo
 ```bash
@@ -151,26 +151,14 @@ cd django-app
 pip install -r requirements.txt
 ```
 
-### 3. Set up PostgreSQL
-```sql
--- In psql
-CREATE DATABASE django_app;
-```
-
-### 4. Configure environment
-```bash
-# Windows PowerShell
-$env:DB_NAME     = "django_app"
-$env:DB_USER     = "postgres"
-$env:DB_PASSWORD = "your_password"
-$env:DB_HOST     = "localhost"
-$env:DB_PORT     = "5432"
-$env:DEBUG       = "True"
-```
-
-### 5. Run migrations & start server
+### 3. Run migrations (SQLite DB created automatically)
 ```bash
 python manage.py migrate
+```
+> SQLite requires no setup — Django creates the `db.sqlite3` file automatically on first migrate.
+
+### 4. Start the server
+```bash
 python manage.py runserver
 ```
 
@@ -194,7 +182,7 @@ Visit `http://127.0.0.1:8000` 🎉
 This app is deployed on [Render](https://render.com) using:
 
 - **Web Service** — Python 3, starts with `gunicorn wsgi:application --bind 0.0.0.0:10000`
-- **PostgreSQL** — managed Render database, connected via `DATABASE_URL` env var
+- **Database** — SQLite file-based database, zero configuration required
 - **Auto-deploy** — every push to `main` triggers a redeploy via `build.sh`
 
 ### `build.sh` (runs on every deploy)
@@ -210,7 +198,6 @@ python manage.py migrate
 
 | Variable | Description |
 |---|---|
-| `DATABASE_URL` | Render PostgreSQL internal connection string |
 | `SECRET_KEY` | Django secret key (use a long random string) |
 | `DEBUG` | Set to `False` in production |
 
